@@ -1,0 +1,51 @@
+name: CI Pipeline 1302210042 Dhafa
+
+on:
+  push:
+    branches:
+      - '1302210042_Dhafa'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Project
+        run: pnpm build
+
+      - name: Run Unit Tests (with Coverage)
+        run: pnpm test -- --coverage 
+      
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # <--- Membaca secret-mu
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # <--- Membaca secret-mu
+        with:
+          args: >
+            -Dsonar.projectKey=DhafaGusman_UTS-IzinTampil
+            -Dsonar.organization=dhafagusman2925
+            -Dsonar.sources=.
+            -Dsonar.tests=.
+            -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx
+            -Dsonar.exclusions=node_modules/**,.github/**,**/*.config.js,**/*.config.ts,next.config.js,jest.config.js
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=true
